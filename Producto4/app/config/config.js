@@ -1,5 +1,7 @@
 const tasksController = require('../controllers/TasksController');
 const weeksController = require('../controllers/WeeksController');
+const pubsub = require('./pubsub');
+const TASK_DRAGGED = "TASK_DRAGGED";
 
 const typeDefs = `#graphql
 scalar ID
@@ -62,6 +64,14 @@ type Task {
     updateTask(id: String, task: TaskInput): Task
     deleteTask(id: String): Task
   }
+  type DragDropEvent {
+  taskId: ID!
+  day: String!
+}
+
+type Subscription {
+  taskDragged: DragDropEvent!
+}
 `;
 
 const resolvers = {
@@ -85,8 +95,22 @@ const resolvers = {
       const taskWithWeek = { ...taskData, week: weekId };
       return await tasksController.createTask(taskWithWeek);
     },
-    updateTask: (_, { id, task }) => tasksController.updateTaskById(id, task),
+    updateTask: (_, { id, task }) => {
+      console.log("Mutation: updateTask triggered"); 
+      const updatedTask = tasksController.updateTaskById(id, task);
+      pubsub.publish(TASK_DRAGGED, { taskDragged: { taskId: id, day: task.day } });
+      console.log("TASK_DRAGGED published", { taskId: id, day: task.day }); 
+      return updatedTask;
+    },
     deleteTask: (_, { id }) => tasksController.deleteTask(id),
+  },
+  Subscription: {
+    taskDragged: {
+      subscribe: () => {
+        console.log("Subscription: taskDragged triggered"); 
+        return pubsub.asyncIterator([TASK_DRAGGED]);
+      },
+    },
   },
 };
 
@@ -94,10 +118,8 @@ const mongoURI = 'mongodb+srv://David:1234@agendasemanal.zbsfqm3.mongodb.net/Age
 const PORT = process.env.PORT || 3000;
 
 module.exports = {
-    typeDefs,
-    resolvers,
-    mongoURI,
-    PORT,
+typeDefs,
+resolvers,
+mongoURI,
+PORT,
 };
-
-
