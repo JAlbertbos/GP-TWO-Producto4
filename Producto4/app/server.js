@@ -4,15 +4,14 @@ const bodyParser = require('body-parser');
 const config = require('./config/config');
 const { typeDefs, resolvers } = require('./config/config.js');
 const path = require('path');
-const mongoose = require('mongoose');
 const connectDB = require('./config/database');
 const http = require('http');
 const socketIO = require('socket.io');
+const pubsub = require('./config/pubsub');
 
 const app = express();
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
@@ -34,29 +33,36 @@ app.get('/uploads/:filename', (req, res) => {
     }
   });
 });
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: ({ req, res }) => ({ req, res, pubsub }),
+  subscriptions: {
+  onConnect: () => console.log('Connected to websocket'),
+  introspection: true,
+  playground: true,
+  }
 });
 
 const httpServer = http.createServer(app);
-const io = socketIO(httpServer);
 
+const io = socketIO(httpServer);
 const setupSocketIO = require('./socket-server');
 setupSocketIO(io);
 
 async function startServer() {
   await server.start();
-  server.applyMiddleware({ app, path: '/graphql' });
-
+  server.applyMiddleware({ app ,  path: '/graphql'  });
+  
   connectDB()
     .then(() => {
       httpServer.listen(config.PORT, () => {
         console.log(`Servidor escuchando en el puerto ${config.PORT}`);
+console.log(`🚀 Subscripciones listas en ws://localhost:${config.PORT}/graphql`);
       });
     })
     .catch((error) => {

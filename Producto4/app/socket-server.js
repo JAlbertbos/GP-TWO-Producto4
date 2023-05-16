@@ -120,6 +120,21 @@ function setupSocketIO(io) {
           }
       });
   });
+    socket.on('taskDragged', async (data, callback) => {
+      console.log('Datos recibidos para tarea arrastrada:', data);
+
+      try {
+        const updatedTask = await TasksController.updateTaskPosition(data.taskId, data.newPosition);
+
+        io.sockets.emit('taskPositionUpdated', updatedTask);
+
+        console.log('OK: Posición de tarea actualizada');
+        callback({ success: true, task: updatedTask });
+      } catch (error) {
+        console.error('Error al actualizar posición de tarea:', error);
+        callback({ success: false, error });
+      }
+    });
     
 
     socket.on('disconnect', () => {
