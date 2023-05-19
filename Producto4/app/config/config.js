@@ -129,10 +129,17 @@ const schema = makeExecutableSchema({
 });
 
 module.exports = {
+<<<<<<< HEAD
   typeDefs,
   resolvers,
   mongoURI,
   PORT,
   TASK_DRAGGED,
   schema
+=======
+typeDefs,
+resolvers,
+mongoURI,
+PORT,
+>>>>>>> parent of 1674252 (graph status ON)
 };

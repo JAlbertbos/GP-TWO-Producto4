@@ -7,12 +7,16 @@ const path = require('path');
 const connectDB = require('./config/database');
 const http = require('http');
 const socketIO = require('socket.io');
+<<<<<<< HEAD
 const { PubSub } = require('graphql-subscriptions');
 const { execute, subscribe } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const { schema } = require('./config/config');
 
 const pubsub = new PubSub();
+=======
+const pubsub = require('./config/pubsub');
+>>>>>>> parent of 1674252 (graph status ON)
 
 const app = express();
 
@@ -45,8 +49,15 @@ const server = new ApolloServer({
   schema, 
   context: ({ req, res }) => ({ req, res, pubsub }),
   subscriptions: {
+<<<<<<< HEAD
     onConnect: () => console.log('Conexión establecida a través de websockets'),
   },
+=======
+  onConnect: () => console.log('Connected to websocket'),
+  introspection: true,
+  playground: true,
+  }
+>>>>>>> parent of 1674252 (graph status ON)
 });
 const httpServer = http.createServer(app);
 
@@ -56,6 +67,7 @@ setupSocketIO(io);
 
 async function startServer() {
   await server.start();
+<<<<<<< HEAD
   server.applyMiddleware({ app, path: '/graphql' });
 
   const subscriptionServer = SubscriptionServer.create(
@@ -74,11 +86,15 @@ async function startServer() {
 );
 
 
+=======
+  server.applyMiddleware({ app ,  path: '/graphql'  });
+  
+>>>>>>> parent of 1674252 (graph status ON)
   connectDB()
     .then(() => {
       httpServer.listen(config.PORT, () => {
         console.log(`Servidor escuchando en el puerto ${config.PORT}`);
-        console.log(`🚀 Subscripciones listas en ws://localhost:${config.PORT}${server.graphqlPath}`);
+console.log(`🚀 Subscripciones listas en ws://localhost:${config.PORT}/graphql`);
       });
     })
     .catch((error) => {
