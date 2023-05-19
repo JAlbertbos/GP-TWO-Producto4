@@ -10,6 +10,7 @@ const socketIO = require('socket.io');
 const { PubSub } = require('graphql-subscriptions');
 const { execute, subscribe } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
+const { schema } = require('./config/config');
 
 const pubsub = new PubSub();
 
@@ -40,18 +41,13 @@ app.get('/uploads/:filename', (req, res) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+  schema, 
   context: ({ req, res }) => ({ req, res, pubsub }),
   subscriptions: {
     onConnect: () => console.log('Conexión establecida a través de websockets'),
-    schema: typeDefs, // Proporciona el esquema GraphQL al SubscriptionServer
-
   },
 });
-
 const httpServer = http.createServer(app);
 
 const io = socketIO(httpServer);
@@ -63,19 +59,20 @@ async function startServer() {
   server.applyMiddleware({ app, path: '/graphql' });
 
   const subscriptionServer = SubscriptionServer.create(
-    {
-      schema: server.schema,
-      execute,
-      subscribe,
-      onConnect: (connectionParams, webSocket) => {
-        console.log('Cliente conectado a través de websockets.');
-      },
+  {
+    schema, 
+    execute,
+    subscribe,
+    onConnect: (connectionParams, webSocket) => {
+      console.log('Cliente conectado a través de websockets.');
     },
-    {
-      server: httpServer,
-      path: server.graphqlPath,
-    }
-  );
+  },
+  {
+    server: httpServer,
+    path: server.graphqlPath,
+  }
+);
+
 
   connectDB()
     .then(() => {

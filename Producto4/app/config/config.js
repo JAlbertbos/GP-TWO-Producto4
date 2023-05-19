@@ -1,6 +1,10 @@
 const tasksController = require('../controllers/TasksController');
 const weeksController = require('../controllers/WeeksController');
 const pubsub = require('./pubsub');
+const { makeExecutableSchema } = require('@graphql-tools/schema');
+
+const mongoURI = 'mongodb+srv://David:1234@agendasemanal.zbsfqm3.mongodb.net/AgendaSemanal';
+const PORT = process.env.PORT || 3000;
 const TASK_DRAGGED = "TASK_DRAGGED";
 
 const typeDefs = `#graphql
@@ -105,22 +109,30 @@ const resolvers = {
     deleteTask: (_, { id }) => tasksController.deleteTask(id),
   },
   Subscription: {
-    taskDragged: {
-      subscribe: () => {
-        console.log("Subscription: taskDragged triggered"); 
-        return pubsub.asyncIterator([TASK_DRAGGED]);
-      },
+  taskDragged: {
+    subscribe: () => {
+      console.log("Subscription: taskDragged triggered");
+      const stream = pubsub.asyncIterator([TASK_DRAGGED]);
+      const logAndPassThrough = (value) => {
+        console.log("Sending event to subscription:", value);
+        return value;
+      };
+      return asyncIteratorToStream(mapAsyncIterator(stream, logAndPassThrough));
     },
   },
+},
 };
 
-const mongoURI = 'mongodb+srv://David:1234@agendasemanal.zbsfqm3.mongodb.net/AgendaSemanal';
-const PORT = process.env.PORT || 3000;
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+});
 
 module.exports = {
-typeDefs,
-resolvers,
-mongoURI,
-PORT,
-TASK_DRAGGED,
+  typeDefs,
+  resolvers,
+  mongoURI,
+  PORT,
+  TASK_DRAGGED,
+  schema
 };
