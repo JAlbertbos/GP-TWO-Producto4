@@ -122,4 +122,5 @@ typeDefs,
 resolvers,
 mongoURI,
 PORT,
+TASK_DRAGGED,
 };
