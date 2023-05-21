@@ -62,7 +62,9 @@ type Task {
     updateTask(id: String, task: TaskInput): Task
     deleteTask(id: String): Task
   }
-`;
+  type Subscription {
+    taskUpdated: Task
+  }`;
 
 const resolvers = {
   Query: {
@@ -99,5 +101,3 @@ module.exports = {
     mongoURI,
     PORT,
 };
-
-

@@ -1,5 +1,6 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
+const { PubSub } = require('graphql-subscriptions');
 const bodyParser = require('body-parser');
 const config = require('./config/config');
 const { typeDefs, resolvers } = require('./config/config.js');
@@ -34,35 +35,57 @@ app.get('/uploads/:filename', (req, res) => {
     }
   });
 });
+
+const cors = require('cors');
+
+// Antes de tus rutas y middleware
+app.use(cors({
+  origin: 'https://studio.apollographql.com',
+  credentials: true,
+}));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+const pubsub = new PubSub();
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: ({ req, res }) => ({ req, res, pubsub }),
+  subscriptions: {
+    onConnect: () => console.log('Connected to websocket'),
+  },
 });
 
 const httpServer = http.createServer(app);
-const io = socketIO(httpServer);
 
+const io = socketIO(httpServer);
 const setupSocketIO = require('./socket-server');
 setupSocketIO(io);
 
 async function startServer() {
-  await server.start();
-  server.applyMiddleware({ app, path: '/graphql' });
-
-  connectDB()
-    .then(() => {
-      httpServer.listen(config.PORT, () => {
-        console.log(`Servidor escuchando en el puerto ${config.PORT}`);
-      });
-    })
-    .catch((error) => {
-      console.error("Error de conexión a MongoDB:", error);
+  try {
+    await server.start();
+    // Middleware para Express
+    server.applyMiddleware({
+      app,
+      cors: {
+        origin: 'https://studio.apollographql.com',
+        credentials: true,
+      },
     });
+    await connectDB();
+  } catch (error) {
+    console.error('Error starting server', error);
+  }
 }
+
+// Mueve esto fuera de startServer()
+httpServer.listen(config.PORT, () => {
+  console.log(`🚀 Server ready at http://localhost:${config.PORT}${server.graphqlPath}`);
+  console.log(`🚀 Subscriptions ready at ws://localhost:${config.PORT}${server.subscriptionsPath}`);
+});
 
 const tasksRoutes = require('./routes/tasksRoutes');
 app.use(tasksRoutes);
