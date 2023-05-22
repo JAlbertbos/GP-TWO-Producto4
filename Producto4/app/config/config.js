@@ -1,5 +1,6 @@
 const tasksController = require('../controllers/TasksController');
 const weeksController = require('../controllers/WeeksController');
+const { pubsub, TASK_CREATED, TASK_MOVED } = require('./pubsub');
 
 const typeDefs = `#graphql
 scalar ID
@@ -62,6 +63,10 @@ type Task {
     updateTask(id: String, task: TaskInput): Task
     deleteTask(id: String): Task
   }
+  type Subscription {
+  taskCreated: Task
+  taskMoved: Task
+}
 `;
 
 const resolvers = {
@@ -78,16 +83,43 @@ const resolvers = {
     deleteWeek: (_, { id }) => {
       return weeksController.deleteWeekById(id);
     },
-    updateWeek: (_, { id, week }) => {
-      return weeksController.updateWeekById(id, week);
-    },
     createTask: async (_, { taskData, weekId }) => {
-      const taskWithWeek = { ...taskData, week: weekId };
-      return await tasksController.createTask(taskWithWeek);
-    },
-    updateTask: (_, { id, task }) => tasksController.updateTaskById(id, task),
+    const taskWithWeek = { ...taskData, week: weekId };
+    const newTask = await tasksController.createTask(taskWithWeek);
+
+    console.log('Publicando evento TASK_CREATED');
+    pubsub.publish(TASK_CREATED, { taskCreated: newTask });
+
+    return newTask;
+  },
+  updateTask: (_, { id, task }) => {
+    const updatedTask = tasksController.updateTaskById(id, task);
+
+    console.log('Publicando evento TASK_MOVED');
+    pubsub.publish(TASK_MOVED, { taskMoved: updatedTask });
+
+    return updatedTask;
+  },
+
     deleteTask: (_, { id }) => tasksController.deleteTask(id),
   },
+  
+  Subscription: {
+  taskCreated: {
+    subscribe: () => {
+      console.log('Subscripción a TASK_CREATED iniciada');
+      return pubsub.asyncIterator([TASK_CREATED]);
+    },
+  },
+  taskMoved: {
+    subscribe: () => {
+      console.log('Subscripción a TASK_MOVED iniciada');
+      return pubsub.asyncIterator([TASK_MOVED]);
+    },
+  },
+},
+
+
 };
 
 const mongoURI = 'mongodb+srv://David:1234@agendasemanal.zbsfqm3.mongodb.net/AgendaSemanal';
