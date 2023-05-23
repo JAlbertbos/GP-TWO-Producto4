@@ -10,6 +10,12 @@ const http = require('http');
 const socketIO = require('socket.io');
 const { pubsub } = require('./config/pubsub');
 const app = express();
+const cors = require('cors')
+
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://studio.apollographql.com'],
+  credentials: true
+}))
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -42,11 +48,12 @@ const server = new ApolloServer({
   resolvers,
   context: ({ req, res }) => ({ req, res, pubsub }),
   subscriptions: {
-  path: '/subscriptions',
-  onConnect: () => console.log('Conectado al WebSocket'),
-  onDisconnect: () => console.log('Desconectado del WebSocket'),
-},
+    path: '/subscriptions',
+    onConnect: () => console.log('Conectado al WebSocket'),
+    onDisconnect: () => console.log('Desconectado del WebSocket'),
+  },
 });
+
 
 const httpServer = http.createServer(app);
 
@@ -55,9 +62,12 @@ const io = socketIO(httpServer);
 const setupSocketIO = require('./socket-server');
 setupSocketIO(io);
 
+const tasksRoutes = require('./routes/tasksRoutes');
+app.use(tasksRoutes);
+
 async function startServer() {
   await server.start();
-  server.applyMiddleware({ app, path: '/graphql' });
+server.applyMiddleware({ app, path: '/graphql', cors: true });
 
   connectDB()
     .then(() => {
@@ -71,9 +81,6 @@ async function startServer() {
       console.error("Error de conexión a MongoDB:", error);
     });
 }
-
-const tasksRoutes = require('./routes/tasksRoutes');
-app.use(tasksRoutes);
 
 startServer();
 

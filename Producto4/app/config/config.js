@@ -83,23 +83,17 @@ const resolvers = {
     deleteWeek: (_, { id }) => {
       return weeksController.deleteWeekById(id);
     },
-    createTask: async (_, { taskData, weekId }) => {
+  createTask: async (_, { taskData, weekId }) => {
     const taskWithWeek = { ...taskData, week: weekId };
     const newTask = await tasksController.createTask(taskWithWeek);
-
-    console.log('Publicando evento TASK_CREATED');
-    pubsub.publish(TASK_CREATED, { taskCreated: newTask });
-
+    await pubsub.publish(TASK_CREATED, { taskCreated: newTask });
     return newTask;
-  },
-  updateTask: (_, { id, task }) => {
-    const updatedTask = tasksController.updateTaskById(id, task);
-
-    console.log('Publicando evento TASK_MOVED');
-    pubsub.publish(TASK_MOVED, { taskMoved: updatedTask });
-
+},
+updateTask: async (_, { id, task }) => {
+    const updatedTask = await tasksController.updateTaskById(id, task);
+    await pubsub.publish(TASK_MOVED, { taskMoved: updatedTask });
     return updatedTask;
-  },
+},
 
     deleteTask: (_, { id }) => tasksController.deleteTask(id),
   },
