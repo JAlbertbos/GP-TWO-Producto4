@@ -71,7 +71,7 @@ type Task {
 
 const resolvers = {
   Query: {
-    getAllWeeks: () => weeksController.getWeeks(),
+    getAllWeeks: () => weeksController.getAllWeeks(),
     getWeekById: (_, { id }) => weeksController.getWeekById(id),
     getAllTasks: (_, { weekId }) => tasksController.getTasks({ weekId }),
     getTaskById: (_, { id }) => tasksController.getTaskById(id),
