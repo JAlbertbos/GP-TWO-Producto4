@@ -1,4 +1,5 @@
 const socket = io();
+
 let selectedCard;
 let tarjetaAEditar;
 // Función para crear o actualizar una tarea usando Socket.IO

@@ -1,11 +1,12 @@
 const WeeksController = require('./controllers/WeeksController');
 const TasksController = require('./controllers/TasksController');
+
 const fs = require('fs');
 const path = require('path');
 
 function setupSocketIO(io) {
   io.on('connection', (socket) => {
-    //console.log('Client connected');
+    console.log(`Client connected with id ${socket.id}`);
 
     //SEMANAS
     socket.on('createWeek', async (data, callback) => {
@@ -138,7 +139,7 @@ function setupSocketIO(io) {
     
 
     socket.on('disconnect', () => {
-      //console.log('Client disconnected');
+       console.log(`Client disconnected with id ${socket.id}`);
     });
   });
 }
