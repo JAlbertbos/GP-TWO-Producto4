@@ -1,0 +1,4 @@
+const TASK_CREATED = 'TASK_CREATED';
+const TASK_MOVED = 'TASK_MOVED';
+
+module.exports = { TASK_CREATED, TASK_MOVED };

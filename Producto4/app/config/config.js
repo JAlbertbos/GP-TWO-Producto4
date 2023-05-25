@@ -1,6 +1,10 @@
 const tasksController = require('../controllers/TasksController');
 const weeksController = require('../controllers/WeeksController');
-const { pubsub, TASK_CREATED, TASK_MOVED } = require('./pubsub');
+const { TASK_CREATED, TASK_MOVED } = require('./subscriptions');
+const { PubSub } = require('graphql-subscriptions');
+
+
+const pubsub = new PubSub();
 
 const typeDefs = `#graphql
 scalar ID
@@ -83,36 +87,36 @@ const resolvers = {
     deleteWeek: (_, { id }) => {
       return weeksController.deleteWeekById(id);
     },
-  createTask: async (_, { taskData, weekId }) => {
-    const taskWithWeek = { ...taskData, week: weekId };
-    const newTask = await tasksController.createTask(taskWithWeek);
-    await pubsub.publish(TASK_CREATED, { taskCreated: newTask });
-    return newTask;
+   createTask: async (_, { taskData, weekId }) => {
+  const taskWithWeek = { ...taskData, week: weekId };
+  const newTask = await tasksController.createTask(taskWithWeek);
+  await pubsub.publish('TASK_CREATED', { taskCreated: newTask });
+  return newTask;
 },
 updateTask: async (_, { id, task }) => {
-    const updatedTask = await tasksController.updateTaskById(id, task);
-    await pubsub.publish(TASK_MOVED, { taskMoved: updatedTask });
-    return updatedTask;
+  const updatedTask = await tasksController.updateTaskById(id, task);
+  await pubsub.publish('TASK_MOVED', { taskMoved: updatedTask });
+  return updatedTask;
 },
+
 
     deleteTask: (_, { id }) => tasksController.deleteTask(id),
   },
   
-  Subscription: {
+ Subscription: {
   taskCreated: {
     subscribe: () => {
-      console.log('Subscripción a TASK_CREATED iniciada');
-      return pubsub.asyncIterator([TASK_CREATED]);
+      console.log('Suscripción a TASK_CREATED iniciada');
+      return pubsub.asyncIterator(['TASK_CREATED']);
     },
   },
   taskMoved: {
     subscribe: () => {
       console.log('Subscripción a TASK_MOVED iniciada');
-      return pubsub.asyncIterator([TASK_MOVED]);
+      return pubsub.asyncIterator(['TASK_MOVED']);
     },
   },
 },
-
 
 };
 
@@ -124,6 +128,7 @@ module.exports = {
     resolvers,
     mongoURI,
     PORT,
+    pubsub,
 };
 
 
