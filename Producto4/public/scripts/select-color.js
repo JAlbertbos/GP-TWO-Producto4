@@ -1,4 +1,4 @@
-// Definir una variable global para el color seleccionado
+
 window.selectedColor = "black";
 
 const circles = document.querySelectorAll(".circle");
