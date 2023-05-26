@@ -64,8 +64,8 @@ exports.createTask = async (taskData) => {
 };
 
 
-
 exports.updateTaskById = async (id, updatedData) => {
+  console.log('Método updateTaskById llamado con id:', id, 'y updatedData:', updatedData);
   try {
     return await Task.findByIdAndUpdate(id, updatedData, { new: true });
   } catch (err) {
