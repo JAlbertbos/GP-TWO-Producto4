@@ -1,5 +1,3 @@
-
-import io from 'socket.io-client';
 const socket = io();
 let selectedCard;
 let tarjetaAEditar;
@@ -51,10 +49,12 @@ async function createOrUpdateTask(
 		};
 		
 		if (!id) {
-			socket.emit('createTask', taskData, async (response) => {
+			socket.emit('createTask', { ...taskData, day }, async (response) => {
 				if (response.success) {
 					console.log('Tarea creada con éxito');
-					const newTaskId = response.task.id; 
+					const newTaskId = response.task.id; // Accede a la propiedad 'task' de la respuesta
+
+					// Actualizar el atributo 'data-id' y el ID de la tarjeta
 					if (taskCard) {
 						taskCard.setAttribute('data-id', newTaskId);
 						taskCard.id = `tarjeta-${newTaskId}`;
@@ -68,24 +68,17 @@ async function createOrUpdateTask(
 			});
 		} else {
 			socket.emit('updateTask', { id, updatedData: taskData }, (response) => {
-				if (response && response.success) {
-					if (response.file) {
-						console.log('Archivo actualizado:', response.file);
-					} else {
-						console.log('Tarea actualizada sin archivo:', response.updatedTask);
-					}
+				if (response.success) {
+					console.log('Tarea actualizada con éxito');
 					resolve(id);
 					onSuccess(false);
 				} else {
-					console.error('Error al actualizar tarea:', response ? response.error : 'No response from server');
-					reject(new Error(`Error al actualizar tarea: ${response ? response.error : 'No response from server'}`));
+					reject(new Error(`Error al actualizar tarea: ${response.error}`));
 				}
 			});
 		}
 	});
 }
-
-
 // Función para crear una tarjeta de tarea en el DOM a partir de los datos de la tarea
 
 function createTaskCard(task) {

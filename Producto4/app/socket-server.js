@@ -72,30 +72,30 @@ function setupSocketIO(io) {
     });
     
     socket.on('updateTask', async (data, callback) => {
-  // console.log('Socket.io Datos recibidos para actualizar tarea:', data);
-  try {
-    let updatedData = data.updatedData;
-    let filename = null;
-
-    if (updatedData.file) {
-      filename = `file-${Date.now()}`;
-      await fs.promises.writeFile(path.join(__dirname, 'uploads', filename), updatedData.file);
-      // console.log('Socket.io OK: Archivo subido');
-      updatedData.fileUrl = `/uploads/${filename}`;
-    }
-
-    const updatedTask = await TasksController.updateTaskById(data.id, updatedData);
-    io.sockets.emit('updatedTask', updatedTask);
-    // console.log('Socket.io OK: Tarea actualizada');
-    // Devuelve tanto la tarea actualizada como la URL del archivo (si existe)
-    callback({ success: true, file: updatedData.fileUrl, updatedTask: updatedTask });
-  } catch (error) {
-    // console.error('Socket.io Error al actualizar tarea:', error);
-    callback({ success: false, error: error.message }); 
-  }
-});
-
-
+      // console.log('Socket.io Datos recibidos para actualizar tarea:', data);
+    
+      try {
+        let updatedData = data.updatedData;
+        let filename = null; // Añade esta línea para inicializar la variable filename con un valor predeterminado
+    
+        if (updatedData.file) {
+          filename = `file-${Date.now()}`; 
+    
+          await fs.promises.writeFile(path.join(__dirname, 'uploads', filename), updatedData.file);
+    
+          // console.log('Socket.io OK: Archivo subido');
+          updatedData.fileUrl = `/uploads/${filename}`;
+    
+        }
+        const updatedTask = await TasksController.updateTaskById(data.id, updatedData);
+        io.sockets.emit('updatedTask', updatedTask);
+        // console.log('Socket.io OK: Tarea actualizada');
+        callback({ success: true, file: updatedData.fileUrl });
+      } catch (error) {
+        // console.error('Socket.io Error al actualizar tarea:', error);
+        callback({ success: false, error: error.message }); 
+      }
+    });
     socket.on('deleteTask', async (data, callback) => {
       try {
         await TasksController.deleteTask(data.id);

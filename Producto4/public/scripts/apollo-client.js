@@ -3,29 +3,24 @@ import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import gql from 'graphql-tag';
 
-console.log("Desde apollo-client.js: Imports realizados con éxito");
-
-
+// HTTP connection to the API
 const httpLink = new HttpLink({
-  uri: 'http://localhost:3000/graphql', 
+  uri: 'http://localhost:3000/graphql', // Replace with your GraphQL server URL
 });
 
-console.log("Desde apollo-client.js: HTTP Link establecido");
-
+// WebSocket link for subscriptions
 const wsLink = new WebSocketLink({
-  uri: 'wss://localhost:3000/graphql',
+  uri: 'ws://localhost:3000/graphql', // Replace with your GraphQL server WebSocket URL
   options: {
     reconnect: true,
-    lazy: true, 
+    lazy: true,  // Added for compatibility with graphql-ws
   },
 });
 
-console.log("Desde apollo-client.js: WebSocket Link establecido");
-
+// Split links for different operation types
 const link = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
-    console.log("Desde apollo-client.js: Ejecutando split link, definition.kind:", definition.kind, ", definition.operation:", definition.operation);
     return (
       definition.kind === 'OperationDefinition' &&
       definition.operation === 'subscription'
@@ -35,15 +30,12 @@ const link = split(
   httpLink,
 );
 
-console.log("Desde apollo-client.js: Link de split creado");
-
 const client = new ApolloClient({
   link,
   cache: new InMemoryCache(),
 });
 
-console.log("Desde apollo-client.js: ApolloClient creado");
-
+// Subscriptions
 const TASK_CREATED_SUBSCRIPTION = gql`
   subscription {
     taskCreated {
@@ -69,8 +61,6 @@ const TASK_CREATED_SUBSCRIPTION = gql`
     }
   }
 `;
-
-console.log("Desde apollo-client.js: TASK_CREATED_SUBSCRIPTION creada");
 
 const TASK_MOVED_SUBSCRIPTION = gql`
   subscription {
@@ -98,9 +88,7 @@ const TASK_MOVED_SUBSCRIPTION = gql`
   }
 `;
 
-console.log("Desde apollo-client.js: TASK_MOVED_SUBSCRIPTION creada");
-
-
+// Subscription handlers
 client.subscribe({ query: TASK_CREATED_SUBSCRIPTION }).subscribe({
   next(data) {
     console.log('DESDE APOLLO-SERVER Task Created:', data);
@@ -109,8 +97,6 @@ client.subscribe({ query: TASK_CREATED_SUBSCRIPTION }).subscribe({
     console.error('Error:', err);
   },
 });
-
-console.log("Desde apollo-client.js: Suscripción a TASK_CREATED_SUBSCRIPTION realizada");
 
 client.subscribe({ query: TASK_MOVED_SUBSCRIPTION }).subscribe({
   next(data) {
@@ -121,8 +107,4 @@ client.subscribe({ query: TASK_MOVED_SUBSCRIPTION }).subscribe({
   },
 });
 
-console.log("Desde apollo-client.js: Suscripción a TASK_MOVED_SUBSCRIPTION realizada");
-
 export default client;
-
-console.log("Desde apollo-client.js: Exportación de client realizada");
