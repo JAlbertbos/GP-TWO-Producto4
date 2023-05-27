@@ -1,8 +1,6 @@
 const tasksController = require('../controllers/TasksController');
 const weeksController = require('../controllers/WeeksController');
-const { TASK_CREATED, TASK_MOVED } = require('./subscriptions');
 const { PubSub } = require('graphql-subscriptions');
-
 
 const pubsub = new PubSub();
 
@@ -87,7 +85,7 @@ const resolvers = {
     deleteWeek: (_, { id }) => {
       return weeksController.deleteWeekById(id);
     },
-   createTask: async (_, { taskData, weekId }) => {
+    createTask: async (_, { taskData, weekId }) => {
   const taskWithWeek = { ...taskData, week: weekId };
   const newTask = await tasksController.createTask(taskWithWeek);
   await pubsub.publish('TASK_CREATED', { taskCreated: newTask });
@@ -99,36 +97,40 @@ updateTask: async (_, { id, task }) => {
   return updatedTask;
 },
 
-
     deleteTask: (_, { id }) => tasksController.deleteTask(id),
   },
   
- Subscription: {
-  taskCreated: {
-    subscribe: () => {
-      console.log('Suscripción a TASK_CREATED iniciada');
-      return pubsub.asyncIterator(['TASK_CREATED']);
+  Subscription: {
+    taskCreated: {
+        subscribe: () => {
+            console.log('Suscripción a TASK_CREATED iniciada');
+            const iterator = pubsub.asyncIterator(['TASK_CREATED']);
+            console.log('Iterador de TASK_CREATED creado', iterator);
+            return iterator;
+        },
     },
-  },
-  taskMoved: {
-    subscribe: () => {
-      console.log('Subscripción a TASK_MOVED iniciada');
-      return pubsub.asyncIterator(['TASK_MOVED']);
+    taskMoved: {
+        subscribe: () => {
+            console.log('Suscripción a TASK_MOVED iniciada');
+            const iterator = pubsub.asyncIterator(['TASK_MOVED']);
+            console.log('Iterador de TASK_MOVED creado', iterator);
+            return iterator;
+        },
     },
-  },
 },
 
 };
+
+
 
 const mongoURI = 'mongodb+srv://David:1234@agendasemanal.zbsfqm3.mongodb.net/AgendaSemanal';
 const PORT = process.env.PORT || 3000;
 
 module.exports = {
-    typeDefs,
-    resolvers,
-    mongoURI,
-    PORT,
-    pubsub,
+  typeDefs,
+  resolvers,
+  mongoURI,
+  PORT,
+  pubsub,
 };
-
 

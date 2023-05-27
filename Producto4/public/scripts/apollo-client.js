@@ -1,22 +1,24 @@
 import { ApolloClient, InMemoryCache, HttpLink, split } from '@apollo/client';
-import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
+import gql from 'graphql-tag';
 
-// Crear un HttpLink para conectarse a tu servidor GraphQL
+// HTTP connection to the API
 const httpLink = new HttpLink({
-  uri: 'http://localhost:3000/graphql', // tu endpoint de GraphQL
+  uri: 'http://localhost:3000/graphql', // Replace with your GraphQL server URL
 });
 
-// Crear un WebSocketLink para las suscripciones
+// WebSocket link for subscriptions
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:3000/graphql', // tu endpoint de WebSocket
+  uri: 'ws://localhost:3000/graphql', // Replace with your GraphQL server WebSocket URL
   options: {
     reconnect: true,
+    lazy: true,  // Added for compatibility with graphql-ws
   },
 });
 
-// Usa la función split para dirigir las consultas a través del enlace HTTP y las suscripciones a través del enlace WebSocket
-const splitLink = split(
+// Split links for different operation types
+const link = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -28,10 +30,81 @@ const splitLink = split(
   httpLink,
 );
 
-// Crear un nuevo cliente Apollo
 const client = new ApolloClient({
-  link: splitLink,
+  link,
   cache: new InMemoryCache(),
+});
+
+// Subscriptions
+const TASK_CREATED_SUBSCRIPTION = gql`
+  subscription {
+    taskCreated {
+      _id
+      name
+      description
+      startTime
+      endTime
+      participants
+      location
+      day
+      completed
+      week {
+        _id
+        name
+        numberWeek
+        priority
+        year
+        description
+        borderColor
+      }
+      fileUrl
+    }
+  }
+`;
+
+const TASK_MOVED_SUBSCRIPTION = gql`
+  subscription {
+    taskMoved {
+      _id
+      name
+      description
+      startTime
+      endTime
+      participants
+      location
+      day
+      completed
+      week {
+        _id
+        name
+        numberWeek
+        priority
+        year
+        description
+        borderColor
+      }
+      fileUrl
+    }
+  }
+`;
+
+// Subscription handlers
+client.subscribe({ query: TASK_CREATED_SUBSCRIPTION }).subscribe({
+  next(data) {
+    console.log('DESDE APOLLO-SERVER Task Created:', data);
+  },
+  error(err) {
+    console.error('Error:', err);
+  },
+});
+
+client.subscribe({ query: TASK_MOVED_SUBSCRIPTION }).subscribe({
+  next(data) {
+    console.log('DESDE APOLLO-SERVER Task Moved:', data);
+  },
+  error(err) {
+    console.error('Error:', err);
+  },
 });
 
 export default client;
