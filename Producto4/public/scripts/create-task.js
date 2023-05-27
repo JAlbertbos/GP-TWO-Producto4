@@ -59,6 +59,7 @@ async function createOrUpdateTask(
 						taskCard.id = `tarjeta-${newTaskId}`;
 					}
 					resolve(newTaskId);
+					taskData.filename = file.name;
 				} else {
 					validarCampos(`Error al crear tarea: ${response.error}`);
 					reject(new Error(`Error al crear tarea: ${response.error}`));
@@ -91,7 +92,7 @@ function createTaskCard(task) {
 
 	if (task.fileUrl) {
 		uploadButtonOrFileLink = `
-			<a href="${task.fileUrl}" target="_blank" class="btn btn-link p-0"><i class="bi bi-file-earmark-text"> Archivo adjuntado</i></a>
+		<a href="${task.fileUrl}" target="_blank" class="btn btn-link p-0"><i class="bi bi-file-earmark-text"> ${task.filename}</i></a>
 		`;
 		console.log(task.fileUrl);
 	}
@@ -230,7 +231,7 @@ function createTaskCard(task) {
 								tarjeta,
 								false,
 								arrayBuffer,
-								task.filename
+								task.name
 							);
 
 

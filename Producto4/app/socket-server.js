@@ -4,6 +4,12 @@ const TasksController = require('./controllers/TasksController');
 const fs = require('fs');
 const path = require('path');
 
+const ensureDirExists = (dirPath) => {
+  if (!fs.existsSync(dirPath)){
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+};
+
 function setupSocketIO(io) {
   io.on('connection', (socket) => {
     console.log(`Client connected with id ${socket.id}`);
@@ -76,26 +82,26 @@ function setupSocketIO(io) {
     
       try {
         let updatedData = data.updatedData;
-        let filename = null; // Añade esta línea para inicializar la variable filename con un valor predeterminado
+        let filename = null;
     
         if (updatedData.file) {
+          ensureDirExists(path.join(__dirname, 'uploads'));  // Asegurar que el directorio 'uploads' exista
+    
           filename = `file-${Date.now()}`; 
-    
           await fs.promises.writeFile(path.join(__dirname, 'uploads', filename), updatedData.file);
-    
           console.log('OK: Archivo subido');
           updatedData.fileUrl = `/uploads/${filename}`;
-    
         }
         const updatedTask = await TasksController.updateTaskById(data.id, updatedData);
         io.sockets.emit('updatedTask', updatedTask);
         console.log('OK: Tarea actualizada');
-        callback({ success: true, file: updatedData.fileUrl }); // Modifica esta línea para usar updatedData.fileUrl en lugar de `/uploads/${filename}`
+        callback({ success: true, file: updatedData.fileUrl });
       } catch (error) {
         console.error('Error al actualizar tarea:', error);
         callback({ success: false, error: error.message }); 
       }
     });
+    
     socket.on('deleteTask', async (data, callback) => {
       try {
         await TasksController.deleteTask(data.id);

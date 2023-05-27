@@ -1,20 +1,22 @@
 const Task = require('../models/Task');
 const multer = require('multer');
-
-// Configuración Multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
-  }
-})
+const path = require('path');
+  
+const storage = multer.diskStorage({  
+  destination: function (req, file, cb) {  
+    cb(null, 'uploads/')  
+  },  
+  filename: function (req, file, cb) {  
+    const fileExtension = path.extname(file.originalname);
+    const fileName = path.basename(file.originalname, fileExtension);
+    cb(null, Date.now() + '-' + fileName + fileExtension)  
+  }  
+})  
 
 const upload = multer({ storage: storage });
 
 
-exports.uploadFile = upload.single('file'), async (req, res) => {
+exports.uploadFile = [upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
     const task = await Task.findById(req.params.taskId);
@@ -29,7 +31,7 @@ exports.uploadFile = upload.single('file'), async (req, res) => {
     console.error(err);
     res.status(500).send({ success: false, message: 'Error subida de archivo' });
   }
-};
+}];
 
 
 exports.getTasks = async ({ weekId }) => {
