@@ -26,7 +26,7 @@
     "node": "^19.8.1",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1",
-    "socket.io-stream": "^0.9.1",
+    "socket.io-stream": "^0.5.3",
     "subscriptions-transport-ws": "^0.11.0",
     "ws": "^8.13.0"
   }
