@@ -3,7 +3,7 @@ const socket = io();
 let selectedCard;
 let tarjetaAEditar;
 
-// Función para crear o actualizar una tarea usando Socket.IO
+// Función para crear o actualizar una tarea
 async function createOrUpdateTask(
   id,
   name,
@@ -74,9 +74,19 @@ async function createOrUpdateTask(
       }
     }
   `
-  : `
+   : `
     mutation {
-      createTask(taskData: ${JSON.stringify(taskData).replace(/"([^(")"]+)":/g, '$1:')}, week: "${weekId}") {
+      createTask(taskData: {
+        name: "${taskData.name}",
+        description: "${taskData.description}",
+        startTime: "${taskData.startTime}",
+        endTime: "${taskData.endTime}",
+        participants: "${taskData.participants}",
+        location: "${taskData.location}",
+        day: "${taskData.day}",
+        completed: ${taskData.completed},
+        week: "${taskData.week}"
+      }) {
         _id
         name
         description

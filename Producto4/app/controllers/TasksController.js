@@ -62,8 +62,6 @@ exports.getTaskById = async (id) => {
 exports.createTask = async (taskData) => {
   try {
     console.log('Desde TaskController:Creando tarea');
-    taskData.week = taskData.weekId;
-    delete taskData.weekId;
     const newTask = new Task(taskData);
     const savedTask = await newTask.save();
     console.log('Desde TaskController:Tarea creada con éxito');

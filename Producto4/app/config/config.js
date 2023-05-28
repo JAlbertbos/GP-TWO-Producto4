@@ -48,7 +48,7 @@ type Task {
     location: String
     day: String
     completed: Boolean
-    week: String
+    week: ID
     fileUrl: String
   }
   type Query {
@@ -62,7 +62,7 @@ type Task {
     createWeek(week: WeekInput): Week
     deleteWeek(id: String): Week
     updateWeek(id: ID, week: WeekInput): Week
-    createTask(taskData: TaskInput!, weekId: ID!): Task
+    createTask(taskData: TaskInput!): Task
     updateTask(id: String, task: TaskInput): Task
     deleteTask(id: String): Task
   }
@@ -118,9 +118,9 @@ const resolvers = {
       return result;
     },
     createTask: async (_, { taskData, weekId }) => {
-      console.log('Creando tarea:', taskData);
-      const taskWithWeek = { ...taskData, week: weekId };
-      const newTask = await tasksController.createTask(taskWithWeek);
+     console.log('Creando tarea:', taskData);
+     const taskWithWeek = { ...taskData, week: weekId };
+    const newTask = await tasksController.createTask(taskWithWeek);
       console.log('Publicando evento TASK_CREATED');
       await pubsub.publish(TASK_CREATED, { taskCreated: newTask });
       console.log('Evento TASK_CREATED publicado con éxito');

@@ -37,16 +37,13 @@ client.request({
 }).subscribe({
   next(data) {
     console.log('graphqlSubscriptions.js :Tarea creada:', data.taskCreated);
-    // Aquí puedes actualizar la UI con la nueva tarea.
-    // Tal vez quieras llamar a `window.location.reload()`
-    // o tal vez quieras actualizar la UI de una manera más específica.
   },
   error(err) {
     console.error('graphqlSubscriptions.js :Error al recibir la tarea creada:', err);
   },
 });
 
-// Similarmente, puedes suscribirte a TASK_MOVED
+
 client.request({
   query: `
     subscription {
