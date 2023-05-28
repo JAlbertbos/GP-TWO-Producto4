@@ -1,20 +1,21 @@
 const WeeksController = require('./controllers/WeeksController');
 const TasksController = require('./controllers/TasksController');
+
 const fs = require('fs');
 const path = require('path');
 
 function setupSocketIO(io) {
   io.on('connection', (socket) => {
-    //console.log('Client connected');
+   // console.log(`Client connected with id ${socket.id}`);
 
     //SEMANAS
     socket.on('createWeek', async (data, callback) => {
-      console.log('Datos recibidos para crear semana:', data);
+     // console.log('Datos recibidos para crear semana:', data);
 
       try {
         const newWeek = await WeeksController.createWeek(data);
         io.sockets.emit('newWeek', newWeek);
-        console.log('OK: Semana creada');
+       // console.log('OK: Semana creada');
         callback({ success: true, week: newWeek });
       } catch (error) {
         console.error('Error al crear semana:', error);
@@ -22,12 +23,12 @@ function setupSocketIO(io) {
       }
     });
     socket.on('updateWeek', async (data, callback) => {
-      console.log('Datos recibidos para actualizar semana:', data);
+     // console.log('Datos recibidos para actualizar semana:', data);
 
       try {
         const updatedWeek = await WeeksController.updateWeekById(data.id, data.updatedData);
         io.sockets.emit('updatedWeek', updatedWeek);
-        console.log('OK: Semana actualizada');
+       // console.log('OK: Semana actualizada');
         callback({ success: true, updatedWeek: updatedWeek });
       } catch (error) {
         console.error('Error al actualizar semana:', error);
@@ -37,7 +38,7 @@ function setupSocketIO(io) {
     socket.on('getAllWeeks', (data, callback) => {
       WeeksController.getAllWeeks()
         .then((semanas_obtenidas) => {
-          console.log('OK: Semanas obtenidas');
+         // console.log('OK: Semanas obtenidas');
           callback({ success: true, weeks: semanas_obtenidas });
         })
         .catch((error) => {
@@ -49,7 +50,7 @@ function setupSocketIO(io) {
     socket.on('getAllTasks', async (data, callback) => {
       try {
         const tasks = await TasksController.getTasks({ weekId: data.weekId });
-        console.log('OK: Tareas obtenidas');
+       // console.log('OK: Tareas obtenidas');
         callback({ success: true, tasks });
       } catch (error) {
         console.error('Error al obtener tareas:', error);
@@ -57,12 +58,12 @@ function setupSocketIO(io) {
       }
     });
     socket.on('createTask', async (data, callback) => {
-      console.log('Datos recibidos para crear tarea:', data); // Añade esta línea para depurar
+     // console.log('Datos recibidos para crear tarea:', data); // Añade esta línea para depurar
     
       try {
         const newTask = await TasksController.createTask(data);
         io.sockets.emit('newTask', newTask);
-        console.log('OK: Tarea creada');
+       // console.log('OK: Tarea creada');
         callback({ success: true, task: newTask });
       } catch (error) {
         console.error('Error al crear tarea:', error);
@@ -71,7 +72,7 @@ function setupSocketIO(io) {
     });
     
     socket.on('updateTask', async (data, callback) => {
-      console.log('Datos recibidos para actualizar tarea:', data);
+     // console.log('Datos recibidos para actualizar tarea:', data);
     
       try {
         let updatedData = data.updatedData;
@@ -82,13 +83,13 @@ function setupSocketIO(io) {
     
           await fs.promises.writeFile(path.join(__dirname, 'uploads', filename), updatedData.file);
     
-          console.log('OK: Archivo subido');
+         // console.log('OK: Archivo subido');
           updatedData.fileUrl = `/uploads/${filename}`;
     
         }
         const updatedTask = await TasksController.updateTaskById(data.id, updatedData);
         io.sockets.emit('updatedTask', updatedTask);
-        console.log('OK: Tarea actualizada');
+       // console.log('OK: Tarea actualizada');
         callback({ success: true, file: updatedData.fileUrl }); // Modifica esta línea para usar updatedData.fileUrl en lugar de `/uploads/${filename}`
       } catch (error) {
         console.error('Error al actualizar tarea:', error);
@@ -99,7 +100,7 @@ function setupSocketIO(io) {
       try {
         await TasksController.deleteTask(data.id);
         io.sockets.emit('deletedTask', { id: data.id });
-        console.log('OK: Tarea eliminada');
+       // console.log('OK: Tarea eliminada');
         callback({ success: true });
       } catch (error) {
         console.error('Error al eliminar tarea:', error);
@@ -115,7 +116,7 @@ function setupSocketIO(io) {
               console.error('Error al subir archivo:', error);
               callback({ success: false, error });
           } else {
-              console.log('OK: Archivo subido');
+             // console.log('OK: Archivo subido');
               callback({ success: true, file: filename });
           }
       });
@@ -138,7 +139,7 @@ function setupSocketIO(io) {
     
 
     socket.on('disconnect', () => {
-      //console.log('Client disconnected');
+      // console.log(`Client disconnected with id ${socket.id}`);
     });
   });
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="/bootstrap/bootstrap.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/Dashboard.css">
+
+  <title>GP-TWO</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <header class="color-rojo shadow-inner">
+    <div class="container d-flex justify-content-between align-items-center py-3">
+      <button type="button" class="btn botonmas" id="addCard" data-bs-toggle="modal"
+        data-bs-target="#nuevaSemanaModal">
+        <i class="bi bi-plus botonmas"></i>
+      </button>
+      <h1 class="text-center text-white m-0">Gestor Semanal</h1>
+      
+    </div>
+  </header>
+  <main class="container my-5 flex-grow-1">
+    <div class="row">
+      
+    </div>
+  </main>
+  <footer class="text-light py-3">
+    <div class="container text-center">
+      Producto 3 - Desarrollo Full Stack con Javascript y servicios Web
+    </div>
+  </footer>
+  <!-- Modal -->
+  <div class="modal fade" id="nuevaSemanaModal" tabindex="-1" aria-labelledby="nuevaSemanaModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="nuevaSemanaModalLabel">Nueva Semana</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="cardForm">
+            <div class="mb-3">
+              <input type="text" id="name" class="form-control" placeholder="Nombre" required>
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <input type="number" id="numberWeek" class="form-control" placeholder="Semana" min="1" max="53" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <select class="form-select" id="priority" required>
+                  <option value="" disabled selected>Prioridad</option>
+                  <option value="1">Alta</option>
+                  <option value="2">Media</option>
+                  <option value="3">Baja</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <input type="number" id="year" class="form-control" placeholder="Año" min="2023" required>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap justify-content-between mb-3">
+              <div class="circle black" data-color="black"></div>
+              <div class="circle red" data-color="red"></div>
+              <div class="circle yellow " data-color="yellow"></div>
+              <div class="circle green" data-color="green"></div>
+              <div class="circle blue" data-color="blue"></div>
+              <div class="circle pink" data-color="pink"></div>
+              <div class="circle purple" data-color="purple"></div>
+            </div>
+            <div class="mb-3">
+              <textarea class="form-control" id="description" placeholder="Descripción" rows="3"></textarea>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+              <button type="submit" class="btn btn-success" id="confirmButton"><i class="bi bi-check"></i></button>
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="bi bi-x"></i></button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal genérica -->
+  <div class="modal fade" id="genericModal" tabindex="-1" aria-labelledby="genericModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header color-rojo text-white">
+          <h5 class="modal-title" id="genericModalLabel">Error</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p id="genericModalMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<!-- Modal para confirmar eliminación de tarjeta -->
+<div class="modal fade" id="eliminarTarjetaModal" tabindex="-1" aria-labelledby="eliminarTarjetaModalLabel"
+aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered">
+  <div class="modal-content">
+    <div class="modal-header color-rojo text-white">
+      <h5 class="modal-title" id="eliminarTarjetaModalLabel">Eliminar tarjeta</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    </div>
+    <div class="modal-body">
+      <p>¿Estás seguro de que quieres eliminar esta tarjeta?</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      <button type="button" class="btn btn-danger" id="eliminarTarjetaBtn">Eliminar</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+ 
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script src="/scripts/create-week.js" type="module"></script>
+<script src="/scripts/delete-week.js" type="module"></script>
+<script src="/bootstrap/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
