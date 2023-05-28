@@ -1,5 +1,6 @@
 const socket = io();
 
+
 //Funciones API
 
 function priorityToString(priority) {

@@ -1,81 +1,128 @@
 const socket = io();
+
 let selectedCard;
 let tarjetaAEditar;
 // Función para crear o actualizar una tarea usando Socket.IO
 async function createOrUpdateTask(
-	id,
-	name,
-	description,
-	startTime,
-	endTime,
-	participants,
-	taskLocation,
-	completed,
-	day,
-	weekId,
-	taskCard,
-	validateTask = false,
-	arrayBuffer = null,
-	filename = null
+  id,
+  name,
+  description,
+  startTime,
+  endTime,
+  participants,
+  taskLocation,
+  completed,
+  day,
+  weekId,
+  taskCard,
+  oldTask = null,
+  arrayBuffer = null,
+  filename = null
 ) {
-	return new Promise((resolve, reject) => {
-		
-		if (validateTask) {
-			if (!validarCampos()) {
-				return;
-			}
-		}
+  return new Promise(async (resolve, reject) => {
+    if (
+      oldTask && (
+        oldTask.name !== name ||
+        oldTask.description !== description ||
+        oldTask.startTime !== startTime ||
+        oldTask.endTime !== endTime ||
+        oldTask.participants !== participants ||
+        oldTask.location !== taskLocation ||
+        oldTask.completed !== completed ||
+        oldTask.day !== day ||
+        oldTask.weekId !== weekId
+      )
+    ) {
+      if (!validarCampos()) {
+        return;
+      }
+    }
 
-		
-		const taskData = {};
-		if (name !== null) taskData.name = name;
-		if (description !== null) taskData.description = description;
-		if (startTime !== null) taskData.startTime = startTime;
-		if (endTime !== null) taskData.endTime = endTime;
-		if (participants !== null) taskData.participants = participants;
-		if (taskLocation !== null) taskData.location = taskLocation;
-		if (completed !== null) taskData.completed = completed;
-		if (day !== null) taskData.day = day;
-		if (weekId !== null) taskData.weekId = weekId;
-		if (arrayBuffer !== null) taskData.file = arrayBuffer;
-		if (filename !== null) taskData.filename = filename;
+    const taskData = {};
+    if (name !== null) taskData.name = name;
+    if (description !== null) taskData.description = description;
+    if (startTime !== null) taskData.startTime = startTime;
+    if (endTime !== null) taskData.endTime = endTime;
+    if (participants !== null) taskData.participants = participants;
+    if (taskLocation !== null) taskData.location = taskLocation;
+    if (completed !== null) taskData.completed = completed;
+    if (day !== null) taskData.day = day;
+    if (weekId !== null) taskData.week = weekId;
+    if (arrayBuffer !== null) taskData.file = arrayBuffer;
+    if (filename !== null) taskData.filename = filename;
 
-		const onSuccess = (isCreated) => {
-			if (isCreated) {
-				console.log('Recargando página...');
-				window.location.reload();
-			}
-		};
-		
-		if (!id) {
-			socket.emit('createTask', { ...taskData, day }, async (response) => {
-				if (response.success) {
-					console.log('Tarea creada con éxito');
-					const newTaskId = response.task.id; 
+    const endpoint = 'http://localhost:3000/graphql';
+   const mutation = id
+  ? `
+    mutation {
+      updateTask(id: "${id}", task: ${JSON.stringify(taskData).replace(/"([^(")"]+)":/g, '$1:')}) {
+        _id
+        name
+        description
+        startTime
+        endTime
+        participants
+        location
+        day
+        completed
+        week {
+          _id
+          name
+        }
+        fileUrl
+      }
+    }
+  `
+  : `
+    mutation {
+      createTask(taskData: ${JSON.stringify(taskData).replace(/"([^(")"]+)":/g, '$1:')}, week: "${weekId}") {
+        _id
+        name
+        description
+        startTime
+        endTime
+        participants
+        location
+        day
+        completed
+        week {
+          _id
+          name
+        }
+        fileUrl
+      }
+    }
+  `;
 
-					if (taskCard) {
-						taskCard.setAttribute('data-id', newTaskId);
-						taskCard.id = `tarjeta-${newTaskId}`;
-					}
-					resolve(newTaskId);
-				} else {
-					validarCampos(`Error al crear tarea: ${response.error}`);
-					reject(new Error(`Error al crear tarea: ${response.error}`));
-				}
-			});
-		} else {
-			socket.emit('updateTask', { id, updatedData: taskData }, (response) => {
-				if (response.success) {
-					console.log('Tarea actualizada con éxito');
-					resolve(id);
-					onSuccess(false);
-				} else {
-					reject(new Error(`Error al actualizar tarea: ${response.error}`));
-				}
-			});
-		}
-	});
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: mutation }),
+    });
+
+    const jsonResponse = await response.json();
+
+    if (!jsonResponse.errors) {
+      const task = id ? jsonResponse.data.updateTask : jsonResponse.data.createTask;
+      console.log(`Tarea ${id ? 'actualizada' : 'creada'} con éxito`);
+      if (taskCard) {
+        taskCard.setAttribute('data-id', task._id);
+        taskCard.id = `tarjeta-${task._id}`;
+      }
+      window.location.reload();
+      resolve(task._id);
+    } else {
+      const errorMsg = jsonResponse.errors[0].message;
+      console.log(`Error al ${id ? 'actualizar' : 'crear'} tarea: ${errorMsg}`);
+      validarCampos(`Error al ${id ? 'actualizar' : 'crear'} tarea: ${errorMsg}`);
+      reject(new Error(`Error al ${id ? 'actualizar' : 'crear'} tarea: ${errorMsg}`));
+    }
+  });
 }
+
 // Función para crear una tarjeta de tarea en el DOM
 
 function createTaskCard(task) {
