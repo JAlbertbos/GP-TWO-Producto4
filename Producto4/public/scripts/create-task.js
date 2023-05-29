@@ -52,59 +52,62 @@ async function createOrUpdateTask(
     if (arrayBuffer !== null) taskData.file = arrayBuffer;
     if (filename !== null) taskData.filename = filename;
 
-    const endpoint = 'http://localhost:3000/graphql';
-   const mutation = id
-  ? `
-    mutation {
-      updateTask(id: "${id}", task: ${JSON.stringify(taskData).replace(/"([^(")"]+)":/g, '$1:')}) {
-        _id
-        name
-        description
-        startTime
-        endTime
-        participants
-        location
-        day
-        completed
-        week {
-          _id
-          name
-        }
-        fileUrl
-      }
-    }
-  `
-   : `
-    mutation {
-      createTask(taskData: {
-        name: "${taskData.name}",
-        description: "${taskData.description}",
-        startTime: "${taskData.startTime}",
-        endTime: "${taskData.endTime}",
-        participants: "${taskData.participants}",
-        location: "${taskData.location}",
-        day: "${taskData.day}",
-        completed: ${taskData.completed},
-        week: "${taskData.week}"
-      }) {
-        _id
-        name
-        description
-        startTime
-        endTime
-        participants
-        location
-        day
-        completed
-        week {
-          _id
-          name
-        }
-        fileUrl
-      }
-    }
-  `;
+    console.log("Datos de la tarea que se intenta crear o actualizar:", taskData);
 
+    const endpoint = 'http://localhost:3000/graphql';
+    const mutation = id
+    ? `
+      mutation {
+        updateTask(id: "${id}", task: ${JSON.stringify(taskData).replace(/"([^(")"]+)":/g, '$1:')}) {
+          _id
+          name
+          description
+          startTime
+          endTime
+          participants
+          location
+          day
+          completed
+          week {
+            _id
+            name
+          }
+          fileUrl
+        }
+      }
+    `
+    : `
+      mutation {
+        createTask(taskData: {
+          name: "${taskData.name}",
+          description: "${taskData.description}",
+          startTime: "${taskData.startTime}",
+          endTime: "${taskData.endTime}",
+          participants: "${taskData.participants}",
+          location: "${taskData.location}",
+          day: "${taskData.day}",
+          completed: ${taskData.completed},
+          week: "${taskData.week}"
+        }) {
+          _id
+          name
+          description
+          startTime
+          endTime
+          participants
+          location
+          day
+          completed
+          week {
+            _id
+            name
+          }
+          fileUrl
+        }
+      }
+    `;
+
+    console.log("Query de mutación enviada:", mutation);
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -116,6 +119,8 @@ async function createOrUpdateTask(
 
     const jsonResponse = await response.json();
 
+    console.log("Respuesta del servidor:", jsonResponse);
+ 	
     if (!jsonResponse.errors) {
       const task = id ? jsonResponse.data.updateTask : jsonResponse.data.createTask;
       console.log(`Tarea ${id ? 'actualizada' : 'creada'} con éxito`);
@@ -123,16 +128,21 @@ async function createOrUpdateTask(
         taskCard.setAttribute('data-id', task._id);
         taskCard.id = `tarjeta-${task._id}`;
       }
-      window.location.reload();
+	   if (!id) {
+    window.location.reload();
+  }
+    
       resolve(task._id);
     } else {
       const errorMsg = jsonResponse.errors[0].message;
       console.log(`Error al ${id ? 'actualizar' : 'crear'} tarea: ${errorMsg}`);
+      console.log("Detalle completo del error:", jsonResponse.errors[0]);
       validarCampos(`Error al ${id ? 'actualizar' : 'crear'} tarea: ${errorMsg}`);
       reject(new Error(`Error al ${id ? 'actualizar' : 'crear'} tarea: ${errorMsg}`));
     }
   });
 }
+
 
 // Función para crear una tarjeta de tarea en el DOM
 
@@ -177,6 +187,7 @@ function createTaskCard(task) {
 	`;
 
 	tarjeta.setAttribute('draggable', true);
+	
 
 	const botonEliminar = tarjeta.querySelector('.eliminar-tarea');
 	botonEliminar.addEventListener('click', async function () {
@@ -314,8 +325,8 @@ function createTaskCard(task) {
 				});
 		});
 	}
-
 	return tarjeta;
+	
 }
 // Función para obtener las tareas de la base de datos por ID de semana usando Socket.IO
 async function getTasks(weekId) {
@@ -432,6 +443,7 @@ async function drop(event) {
 	dropzoneAncestor.appendChild(element);
 }
 window.drop = drop;
+
 // Función para llenar el formulario con los datos de la tarea que se va a editar
 function fillFormWithTaskData(task) {
 	nombreTarea.value = task.name;
