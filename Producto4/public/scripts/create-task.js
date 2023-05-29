@@ -142,8 +142,6 @@ async function createOrUpdateTask(
     }
   });
 }
-
-
 // Función para crear una tarjeta de tarea en el DOM
 
 function createTaskCard(task) {
@@ -381,7 +379,6 @@ async function loadTasksFromDatabase() {
         );
     }
 }
-
 // Función para eliminar una tarea de la base de datos por ID usando Socket.IO
 async function deleteTask(taskId) {
 	return new Promise((resolve, reject) => {
