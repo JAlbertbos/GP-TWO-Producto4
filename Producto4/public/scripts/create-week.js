@@ -255,7 +255,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           description.style.borderColor = selectedColor;
       });
   });
-
+  nuevaSemanaModal.addEventListener('hide.bs.modal', function (event) {
+  cardForm.reset();
+  tarjetaAEditar = null;
+  selectedColor = "black"; 
+    const colorCircles = document.querySelectorAll(".circle");
+  colorCircles.forEach(circle => circle.classList.remove("selected"));
+  const defaultColorCircle = document.querySelector('.circle[data-color="black"]');
+  if (defaultColorCircle) {
+    defaultColorCircle.classList.add('selected');
+  }
+  description.style.borderColor = selectedColor;
+});
   confirmBtn.addEventListener("click", async (e) => {
     var formulario = document.getElementById("cardForm");
     var inputsRequeridos = formulario.querySelectorAll("[required]");
@@ -329,6 +340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       await loadWeeks();
   
       const nuevaSemanaModal = document.getElementById("nuevaSemanaModal");
+      
       const modal = bootstrap.Modal.getInstance(nuevaSemanaModal);
       modal.hide();
   
