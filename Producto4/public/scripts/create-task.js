@@ -362,18 +362,26 @@ function addTaskToDOM(taskCard, selectedDay) {
 
 // Función para cargar las tareas de la base de datos y agregarlas al DOM
 async function loadTasksFromDatabase() {
-	const tasks = await getTasks(weekId);
-	for (const task of tasks) {
-		const taskCard = createTaskCard(task);
-		taskCard.addEventListener('dragstart', function (event) {
-			event.dataTransfer.setData('text/plain', this.id);
-		});
-		addTaskToDOM(
-			taskCard,
-			task.day === 'zone-bottom' ? 'zone-bottom' : task.day
-		);
-	}
+    const tasks = await getTasks(weekId);
+    for (const task of tasks) {
+        const taskCard = createTaskCard(task);
+        taskCard.addEventListener('dragstart', function (event) {
+            event.dataTransfer.setData('text/plain', this.id);
+            
+            // Modificar la apariencia de la tarjeta durante el arrastre
+            this.classList.add('dragging');
+        });
+        taskCard.addEventListener('dragend', function (event) {
+            // Restablecer la apariencia de la tarjeta después del arrastre
+            this.classList.remove('dragging');
+        });
+        addTaskToDOM(
+            taskCard,
+            task.day === 'zone-bottom' ? 'zone-bottom' : task.day
+        );
+    }
 }
+
 // Función para eliminar una tarea de la base de datos por ID usando Socket.IO
 async function deleteTask(taskId) {
 	return new Promise((resolve, reject) => {
