@@ -117,15 +117,31 @@ const resolvers = {
       console.log('Semana actualizada con éxito:', result);
       return result;
     },
-    createTask: async (_, { taskData, weekId }) => {
-     console.log('Creando tarea:', taskData);
-     const taskWithWeek = { ...taskData, week: weekId };
-    const newTask = await tasksController.createTask(taskWithWeek);
-      console.log('Publicando evento TASK_CREATED');
-      await pubsub.publish(TASK_CREATED, { taskCreated: newTask });
-      console.log('Evento TASK_CREATED publicado con éxito');
-      return newTask;
-    },
+    createTask: async (_, { taskData }) => {
+  console.log('Creando tarea:', taskData);
+  
+  // Loggear el objeto tasksController para verificar si createTask está disponible
+  console.log('tasksController:', tasksController);
+  
+  let newTask;
+  try {
+    newTask = await tasksController.createTask(taskData);
+  } catch (error) {
+    console.error('Error al crear tarea:', error);
+    throw error; // Esto permitirá que GraphQL capture el error y lo muestre en la respuesta
+  }
+  console.log('Tarea creada con éxito:', newTask);
+  console.log('Publicando evento TASK_CREATED');
+  try {
+    await pubsub.publish(TASK_CREATED, { taskCreated: newTask });
+  } catch (error) {
+    console.error('Error al publicar TASK_CREATED:', error);
+    throw error;
+  }
+  console.log('Evento TASK_CREATED publicado con éxito');
+  return newTask;
+},
+
     updateTask: async (_, { id, task }) => {
       console.log(`Actualizando tarea con id ${id}`);
       const updatedTask = await tasksController.updateTaskById(id, task);
