@@ -1,3 +1,5 @@
+
+
 const socket = io();
 
 let selectedCard;
@@ -484,6 +486,19 @@ iconoPapelera.classList.add(
 const urlParams = new URLSearchParams(window.location.search);
 const weekId = urlParams.get('weekId');
 
+
+function resetForm() {
+  nombreTarea.value = '';
+  descripcion.value = '';
+  horaInicio.value = '';
+  horaFinal.value = '';
+  participantes.value = '';
+  ubicacion.value = '';
+  completed.checked = false;
+}
+
+
+
 function validarCampos() {
 	let mensajeError = '';
 	if (nombreTarea.value.trim() === '') {
@@ -524,6 +539,7 @@ form.addEventListener('submit', async function (event) {
 		);
 		tarjetaAEditar = null;  
 	}
+	resetForm();
 	modal.hide();
 });
 document
@@ -540,4 +556,7 @@ document
 			bootstrap.Modal.getInstance(eliminarTareaModalEl);
 		eliminarTareaModal.hide();
 	});
+
+
+
 loadTasksFromDatabase();
