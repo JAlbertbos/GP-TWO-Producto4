@@ -129,7 +129,7 @@
       </div>
     </footer>
 
- <!-- Modal con el formulario -->
+<!-- Modal con el formulario -->
 <div class="modal fade" id="formtask" tabindex="-1" aria-labelledby="formtaskLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -172,8 +172,23 @@
   </div>
 </div>
 
-
-
+<script>
+  document.getElementById('formtask').addEventListener('hide.bs.modal', function (event) {
+    const inputs = this.querySelectorAll('input, textarea');
+  
+    inputs.forEach(input => {
+      switch (input.type) {
+        case 'text':
+        case 'textarea':
+          input.value = '';
+          break;
+        case 'time':
+          input.value = '00:00';
+          break;
+      }
+    });
+  });
+</script>
 
 
 <!-- Modal archivo -->
