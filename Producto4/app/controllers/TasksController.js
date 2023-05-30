@@ -1,22 +1,20 @@
 const Task = require('../models/Task');
 const multer = require('multer');
-const path = require('path');
-  
-const storage = multer.diskStorage({  
-  destination: function (req, file, cb) {  
-    cb(null, 'uploads/')  
-  },  
-  filename: function (req, file, cb) {  
-    const fileExtension = path.extname(file.originalname);  
-    const fileName = path.basename(file.originalname, fileExtension);  
-    cb(null, Date.now() + '-' + fileName + fileExtension)
-  }  
-})  
+
+// Configuración Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+})
 
 const upload = multer({ storage: storage });
 
 
-exports.uploadFile = [upload.single('file'), async (req, res) => {
+exports.uploadFile = upload.single('file'), async (req, res) => {
   try {
     console.log('Desde TaskController:Comenzando la subida del archivo');
     const file = req.file;
@@ -33,7 +31,7 @@ exports.uploadFile = [upload.single('file'), async (req, res) => {
     console.error('Error en la subida del archivo', err);
     res.status(500).send({ success: false, message: 'Error subida de archivo' });
   }
-}];
+};
 
 
 exports.getTasks = async ({ weekId }) => {
@@ -76,7 +74,6 @@ exports.createTask = async (taskData) => {
 
 
 exports.updateTaskById = async (id, updatedData) => {
-  console.log('Método updateTaskById llamado con id:', id, 'y updatedData:', updatedData);
   try {
     console.log('Desde TaskController:Actualizando tarea');
     const updatedTask = await Task.findByIdAndUpdate(id, updatedData, { new: true });
